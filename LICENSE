@@ -1,0 +1,80 @@
+Non-Military and Non-Law Enforcement Use License
+
+Copyright (c) 2024 Sean Anderson
+
+This license applies only to the original code provided in this project. Portions of this 
+project utilize third-party libraries (e.g., OpenCV, NumPy, Matplotlib) that are licensed 
+under permissive open-source licenses (e.g., BSD, MIT). These licenses do not impose 
+restrictions on usage, including military or law enforcement purposes. Users must comply 
+with the original licenses of these dependencies in addition to this license.
+
+Permission is hereby granted, free of charge, to any person or organization obtaining a 
+copy of this software and associated documentation files (the "Software"), to use, copy, 
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+subject to the following conditions:
+
+1. **Non-Military Use**:
+   The Software may not be used for any purpose involving the development, manufacturing, 
+   or deployment of military technologies or systems, including but not limited to weapons, 
+   surveillance, combat systems, or any other use that directly or indirectly supports 
+   military activities.
+
+2. **Non-Law Enforcement Use**:
+   The Software may not be used for any purpose involving law enforcement, policing, 
+   surveillance, detention, or any activity carried out by law enforcement agencies or 
+   organizations.
+
+3. **Exception for Life-Saving Use**:
+   The restrictions in clauses 1 and 2 do not apply in the following situations:
+   - **Military Use**: The Software may be used exclusively in non-combat, life-saving 
+     situations, such as humanitarian missions, disaster relief, or medical evacuations 
+     in response to immediate and verifiable threats to human life.
+   - **Law Enforcement Use**: The Software may be used exclusively in search and rescue 
+     operations or similar emergency response efforts where individuals are in immediate 
+     danger, such as natural disasters or missing persons.
+
+   3.1. **Exclusivity of Life-Saving Exceptions**:
+        The Software must be used exclusively for the specified life-saving purposes and 
+        must not be repurposed, modified, or adapted for other activities, including combat, 
+        policing, or surveillance.
+
+   3.2. **Prohibition on Secondary Claims**:
+        The Software must not be used for activities where "saving lives" is a secondary 
+        or indirect justification, such as surveillance, law enforcement operations, or 
+        general policing practices, even if those activities may result in saved lives.
+
+   3.3. **Prohibited Activities Under Life-Saving Exceptions**:
+        The Software may not be used for activities such as:
+        - Surveillance or tracking of individuals for law enforcement purposes 
+          (e.g., tracking speeders).
+        - General traffic monitoring or enforcement.
+        - Non-emergency policing activities, such as crowd control or investigations.
+
+4. **Indirect Use**:
+   The Software may not be incorporated into systems, software, or tools that are distributed 
+   or sold to military or law enforcement organizations for restricted purposes outlined in 
+   clauses 1 and 2.
+
+5. **Attribution**:
+   Any use of the Software for life-saving operations under clause 3 must explicitly credit 
+   the original author and include a copy of this license in documentation or public reporting 
+   related to the use.
+
+6. **Third-Party Licenses**:
+   Portions of this project utilize third-party libraries licensed under permissive open-source 
+   terms (e.g., BSD, MIT). These licenses allow unrestricted use for any purpose, including 
+   military or law enforcement. Users must comply with the terms of these original licenses 
+   when using or distributing this Software.
+
+7. **Jurisdictional Limitations**:
+   The authors recognize that enforcement of this license may vary across jurisdictions. 
+   Users are expected to act in good faith to comply with its terms.
+
+8. All copies or substantial portions of the Software must include this license.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
