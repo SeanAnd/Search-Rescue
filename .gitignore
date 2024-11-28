@@ -23,11 +23,6 @@ env/
 # Log files
 *.log
 
-# Output and processed files
-output/
-*.png
-*.jpg
-
 # OS-specific files
 .DS_Store
 Thumbs.db
