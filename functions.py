@@ -8,41 +8,8 @@ def normalize_image(image):
     rescaled = (normalized * 255).astype(np.uint8)
     return rescaled
 
-def enhance_contrast(image, method="histogram", clip_limit=2.0, tile_grid_size=(8, 8)):
-    """Enhances the contrast of the image using the specified method."""
-    if method == "histogram":
-        return cv2.equalizeHist(image)
-    elif method == "clahe":
-        clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
-        return clahe.apply(image)
-    else:
-        raise ValueError(f"Invalid method '{method}'. Choose 'histogram' or 'clahe'.")
-
-def subtract_background(image, background_image=None, width=15, height=15):
-    """Subtract the background using a Gaussian blur or a reference image."""
-    if background_image is not None:
-        return np.clip(image - background_image, 0, None)
-    else:
-        smoothed_background = cv2.GaussianBlur(image, (width, height), 0)
-        return np.clip(image - smoothed_background, 0, None)
-
-def spectral_filter(image, lower_percentile=5, upper_percentile=95):
-    """Filters the image to keep only a specific range of intensities."""
-    lower_bound = np.percentile(image, lower_percentile)
-    upper_bound = np.percentile(image, upper_percentile)
-    filtered_image = np.where((image >= lower_bound) & (image <= upper_bound), image, 0)
-    normalized = cv2.normalize(filtered_image, None, 0, 255, cv2.NORM_MINMAX)
-    return 255 - normalized
-
-def polarization_filter(image, percentile=95, blur_ksize=(5, 5)):
-    """Suppress glare dynamically based on intensity percentiles."""
-    threshold = np.percentile(image, percentile)
-    suppressed = np.where(image > threshold, threshold, image)
-    blurred = cv2.GaussianBlur(suppressed.astype(np.float32), blur_ksize, 0)
-    return blurred.astype(np.uint8)
-
-def inverse_square_brightness(image, intensity_threshold=10, smoothing_factor=1):
-    """Apply the inverse square law to pixel brightness."""
+def invert_brightness_weight(image, intensity_threshold=10, smoothing_factor=1):
+    """Suppress bright pixels and amplify dim ones via compressive weighting."""
     image = image.astype(np.float32)
     filtered_image = np.where(
         image > intensity_threshold,
@@ -51,3 +18,79 @@ def inverse_square_brightness(image, intensity_threshold=10, smoothing_factor=1)
     )
     filtered_image = cv2.normalize(filtered_image, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
     return filtered_image
+
+def clean_artifacts(image, min_area=50, fill_holes=True):
+    """
+    Remove noise artifacts and fill gaps using connected component analysis.
+
+    Unlike morphological filtering, this preserves original pixel values in the
+    subject by operating on a binary mask rather than the grayscale data directly.
+
+    Parameters:
+    - min_area: components smaller than this (in pixels) are treated as noise
+    - fill_holes: if True, fills interior holes in the largest components
+    """
+    _, binary = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
+
+    mask = np.zeros_like(binary)
+    for i in range(1, num_labels):
+        if stats[i, cv2.CC_STAT_AREA] >= min_area:
+            mask[labels == i] = 255
+
+    if fill_holes:
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(mask, contours, -1, 255, thickness=cv2.FILLED)
+
+    result = cv2.bitwise_and(image, mask)
+    return result
+
+def threshold_brightness(image, threshold=155, dim_factor=0.5, boost_factor=1.25):
+    """
+    Separate bright subjects from dark background by pushing them apart.
+
+    Pixels below the threshold are dimmed, pixels above are boosted.
+    The result is normalized back to 0-255.
+
+    Parameters:
+    - threshold: intensity cutoff (0-255)
+    - dim_factor: multiplier for pixels below threshold (< 1.0 darkens)
+    - boost_factor: multiplier for pixels above threshold (> 1.0 brightens)
+    """
+    img = image.astype(np.float32)
+    result = np.where(img < threshold, img * dim_factor, img * boost_factor)
+    return np.clip(result, 0, 255).astype(np.uint8)
+
+def fsr_upscale(image, scale=1, sharpness=0.8, noise_sensitivity=40.0):
+    """
+    FSR 1.0-inspired spatial upscaling with contrast-adaptive sharpening.
+
+    EASU pass: Lanczos interpolation preserves edges better than bilinear/bicubic.
+    RCAS pass: sharpens detail while suppressing amplification in noisy/flat regions
+    by weighting the unsharp mask inversely with local standard deviation.
+
+    Parameters:
+    - scale: upscale factor (e.g. 2 = double resolution)
+    - sharpness: strength of the RCAS sharpening pass (0.0-2.0)
+    - noise_sensitivity: higher values reduce sharpening in noisy regions
+    """
+    upscaled = cv2.resize(image, None, fx=scale, fy=scale,
+                          interpolation=cv2.INTER_LANCZOS4)
+
+    img_min, img_max = int(upscaled.min()), int(upscaled.max())
+    if img_min == img_max:
+        return upscaled
+    if img_max - img_min < 128:
+        upscaled = cv2.normalize(upscaled, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+    upscaled_f = upscaled.astype(np.float32)
+    lowpass = cv2.GaussianBlur(upscaled_f, (3, 3), 0)
+    detail = upscaled_f - lowpass
+
+    local_variance = cv2.GaussianBlur(detail ** 2, (7, 7), 0)
+    local_std = np.sqrt(np.maximum(local_variance, 0))
+    weight = sharpness / (1.0 + local_std / noise_sensitivity)
+
+    sharpened = np.clip(upscaled_f + detail * weight, 0, 255)
+    return sharpened.astype(np.uint8)

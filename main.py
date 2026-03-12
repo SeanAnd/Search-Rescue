@@ -1,20 +1,27 @@
 import cv2
 from process import process_infrared_image
-from steps import step_contrast_enhancement, step_inverse_square_brightness, step_normalize, step_polarization_filter, step_spectral_filter, step_subtract_background
+from steps import step_clean_artifacts, step_fsr_upscale, step_invert_brightness_weight, step_normalize, step_threshold_brightness
 
 
 if __name__ == "__main__":
     # Provide the path to your infrared image
-    image_path = "./images/field.jpg"
+    image_path = "./images/lake.jpg"
 
     # Define the custom steps
     custom_steps = [
+        # upscale the image using FSR (this is kludgey but it works)
+        step_fsr_upscale,
+        # normalize the image to 0-255 (makes it a bit easier to calculate the threshold and brightness)
         step_normalize,
-        # step_subtract_background,
-        # step_spectral_filter,
-        # step_polarization_filter,
-        # step_contrast_enhancement,
-        step_inverse_square_brightness
+        # make the bright subjects brighter and the dark background darker to separate them.
+        # Basically, since we don't have distance data for the inverse square law 
+        # we need to use a threshold to separate the subjects from the background.
+        # (optional as this kinda whitewashes the image but helps the invert step if done right)
+        step_threshold_brightness,
+        # suppress bright pixels and amplify dim ones. This is a simple way to separate the subjects from the background.
+        step_invert_brightness_weight,
+        # clean the image from artifacts like random noise and small objects
+        step_clean_artifacts, 
     ]
     
     try:
